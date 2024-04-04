@@ -1,0 +1,110 @@
+// Automatically generated C++ file on Thu Mar 21 22:06:06 2024
+//
+// To build with Digital Mars C++ Compiler:
+//
+//    dmc -mn -WD adc_core_lvl1.cpp kernel32.lib
+
+/* FEATURES TO BE IMPLEMENTED*/
+//
+// [OK] - UNIPOLAR ADC
+// [OK] - UNIPOLAR OFFSET ERROR
+// [OK] - UNIPOLAR GAIN ERROR
+// [OK] - UNIPOLAR/BIPOLAR ADC
+// [OK] - UNIPOLAR/BIPOLAR OFFSET ERROR
+// [OK] - UNIPOLAR/BIPOLAR GAIN ERROR
+// [] - UNIPOLAR/BIPOLAR CMRR
+// [] - UNIPOLAR/BIPOLAR PSRR
+// [] - UNIPOLAR/BIPOLAR SNR
+// [] - UNIPOLAR/BIPOLAR THD
+// [] - UNIPOLAR/BIPOLAR SINAD
+// [] - UNIPOLAR/BIPOLAR ENOB
+// [] - UNIPOLAR/BIPOLAR SAMPLING RATE
+// [] - UNIPOLAR/BIPOLAR INPUT IMPEDANCE
+// [] -
+// [] -
+
+#include <stdlib.h>
+
+union uData
+{
+   bool b;
+   char c;
+   unsigned char uc;
+   short s;
+   unsigned short us;
+   int i;
+   unsigned int ui;
+   float f;
+   double d;
+   long long int i64;
+   unsigned long long int ui64;
+   char *str;
+   unsigned char *bytes;
+};
+
+// int DllMain() must exist and return 1 for a process to load the .DLL
+// See https://docs.microsoft.com/en-us/windows/win32/dlls/dllmain for more information.
+int __stdcall DllMain(void *module, unsigned int reason, void *reserved) { return 1; }
+
+// #undef pin names lest they collide with names in any header file(s) you might include.
+#undef IN
+#undef CLK
+#undef VREF_P
+#undef VREF_M
+#undef OUT
+
+int      clk_lastest = 0;
+int      sys_counter = 0;
+double   _out     = 0;
+int      QL       = 0;
+double   LSB, FSR, FSp, FSm, a, b, c;
+
+extern "C" __declspec(dllexport) void adc_core_lvl1(void **opaque, double t, union uData *data)
+{
+   double                  IN     = data[0].d   ; // input
+   bool                    CLK    = data[1].b   ; // input
+   double                  VREF_P = data[2].d   ; // input
+   double                  VREF_M = data[3].d   ; // input
+   int                     RES    = data[4].i   ; // input parameter
+   double                  OE     = data[5].d   ; // input parameter
+   double                  GE     = data[6].d   ; // input parameter
+   double                 &OUT    = data[7].d   ; // output
+
+// Module evaluation code:
+
+   // Calculate Core data
+   QL    = ((2<<(RES-1)));          // Compute Quantization Levels
+   LSB   = (VREF_P-VREF_M)/(QL);    // Compute LSB
+   FSp   = VREF_P-LSB;              // Compute positive FS
+   FSm   = VREF_M;                  // Compute negative FS
+   FSR   = FSp-FSm;                 // Compute FSR
+   a     = (FSp)/(FSp-GE*LSB);      // Compute Gain Error Term
+   b     = a*(OE)*LSB;              // Compute Offset Error Term
+
+
+   // Saturate Voltage Input
+   if(IN > VREF_P){IN=VREF_P;}
+   if(IN < VREF_M){IN=VREF_M;}
+
+   // Apply ADC Linear Transfer Function
+   _out = IN*a+b;
+
+   // Saturate ADC Output
+   if(_out > FSp){_out=FSp;}
+   if(_out < FSm){_out=FSm;}
+
+   // Perform Analog to Digital Conversion
+   _out = (long)((_out-VREF_M)/(LSB));
+
+   // Convert from Integer Value do double
+   _out = (double)((_out*LSB)+VREF_M);
+
+   // Update ADC output
+   if((CLK == 1 && clk_lastest == 0))  {OUT = _out;            }
+
+   // Update ADC internal clock
+   clk_lastest = CLK;
+
+   // Update System Counter
+   sys_counter++;
+}

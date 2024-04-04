@@ -1,0 +1,5 @@
+.subckt ideal_adc_lvl1 IN GND CLK OUT VREF
+
+Ø´X1 «IN´d CLK´b VREF´d 0» «OUT´ui64» «» adc_core_lvl1 int RES={RES} float OE={OE} float GE={GE}
+
+.ends ideal_adc_lvl1
