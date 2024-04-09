@@ -303,7 +303,7 @@ hold on
 plot(qspice_sim8_T(0001:1002),qspice_sim8_uk(0001:1002),'r-');
 plot(qspice_sim8_T(1003:2003),qspice_sim8_uk(1003:2003),'g-');
 plot(qspice_sim8_T(2004:3004),qspice_sim8_uk(2004:3004),'b-');
-plot(qspice_sim8_T(3005:4005),qspice_sim8_uk(3005:4005),'k-');
+plot(qspice_sim8_T(3005:4005),qspice_sim8_uk(3005:4005),'k--');
 grid on
 title('Controller Output Signal u(kT)','fontsize',12);
 legend(...
