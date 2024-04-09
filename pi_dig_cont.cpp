@@ -1,4 +1,4 @@
-// Automatically generated C++ file on Sat Mar 30 22:56:00 2024
+// Automatically generated C++ file on Fri Apr  5 22:54:17 2024
 //
 // To build with Digital Mars C++ Compiler:
 //
@@ -30,66 +30,54 @@ int __stdcall DllMain(void *module, unsigned int reason, void *reserved) { retur
 #undef OUT
 #undef aux
 #undef CLK
+#undef time
 
 int clk_lastest                  = 00;
 
 unsigned long long int sys_clock = 00;
 
-int ADC_QL                       = 00;
-int DAC_QL                       = 00;
-int ADC_RES                      = 12;
-int DAC_RES                      = 12;
-
 double ek                        = 00;
 double ek_1                      = 00;
-double ek_2                      = 00;
 double uk                        = 00;
 double uk_1                      = 00;
-double uk_2                      = 00;
 
 double K                         = 3.187;
 double zi                        = 0.900;
 double pi                        = 1.000;
 
-//double K = 56.300;
-//double zi = 00.650;
-//double zd = 00.970;
-//double pi = 00.000;
-//double pd = 01.000;
-
-double ADC_REF_M                 = -5.0;
-double ADC_REF_P                 =  5.0;
-double DAC_REF_M                 = -5.0;
-double DAC_REF_P                 =  5.0;
-
-double ADC_LSB                   = 0;
-double DAC_LSB                   = 0;
-
 extern "C" __declspec(dllexport) void pi_dig_cont(void **opaque, double t, union uData *data)
 {
-   double                  IN  = data[0].d   ; // input
-   bool                    CLK = data[1].b   ; // input
-   double                 &OUT = data[2].d   ; // output
-   double                 &aux = data[3].d   ; // output
+   double  IN   = data[0].d; // input
+   bool    CLK  = data[1].b; // input
+   double  time = data[2].d; // input
+   double &OUT  = data[3].d; // output
+   double &aux  = data[4].d; // output
+
+   // Initialize State variables for the system. This will prevend data leakage between stepping parameters
+   if(time == 0)
+   {
+      OUT   = 0;
+      aux   = 0;
+      ek_1  = 0;
+      uk_1  = 0;
+      ek    = 0;
+      uk    = 0;
+   }
 
    //// Controller Implementation ////
    if((CLK == 1 && clk_lastest == 0))
    {
       // Get input data
       ek    = IN;
-
       // Apply Control Law
-      uk    = uk_1*pi + ek*K - ek_1*K*zi;
-      //uk = ek*K - K*(zi+zd)*ek_1 + K*zi*zd*ek_2 + (pi+pd)*uk_1 - (pi*pd)*uk_2;
-
+      uk    = (pi)*uk_1 + (K)*ek - (K*zi)*ek_1;
       // Update variables
       OUT   = uk  ;
-      //aux   = uk_1;
-      //ek_2  = ek_1;
+
       ek_1  = ek  ;
-      //uk_2  = uk_1;
       uk_1  = uk  ;
    }
+   aux   = uk_1;
 
    // Update ADC internal clock
    clk_lastest = CLK;

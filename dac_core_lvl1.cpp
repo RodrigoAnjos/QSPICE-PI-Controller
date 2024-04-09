@@ -49,7 +49,7 @@ extern "C" __declspec(dllexport) void dac_core_lvl1(void **opaque, double t, uni
    double                 GE     = data[6].d   ; // input parameter
    double                &OUT    = data[7].d   ; // output
 
-// Module evaluation code:
+   // Module evaluation code:
 
    // Calculate Core data
    QL    = ((2<<(RES-1)));          // Compute Quantization Levels
